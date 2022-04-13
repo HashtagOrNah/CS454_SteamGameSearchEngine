@@ -24,7 +24,7 @@ class gameSearchEngine(object):
         self.index = self.init_index(ix_dir)
         self.n = 10
         self.junction_type = qparser.OrGroup
-        self.search_fields = ["app_id, title", "short_desc", "about_the_game"]
+        self.search_fields = ["title", "short_desc", "about_the_game"]
 
     def init_index(self, ix_dir):            # Initializes the index, using optional parameters if provided
         if whoosh.index.exists_in(ix_dir):
@@ -88,8 +88,11 @@ class gameSearchEngine(object):
         writer.commit()
     
     def search(self, query):  # Passes in the query and then prints the results
-        title,year,total_results, ids = self.search_index(query)
-        self.print_topN_results(title,year,total_results, ids)
+        # title,year,total_results, ids= self.search_index(query)
+        #self.print_topN_results(title,year,total_results, ids)
+        results = self.search_index(query)
+        return results
+
     
     def print_topN_results(self, results, years, total_results, ids): # Prints the results to n elements
         print()
@@ -115,24 +118,35 @@ class gameSearchEngine(object):
             i+=1
         print(max)
         print(i)
+    
+    def get_by_id(self, id):
+
+        ret = None
+        with self.index.searcher() as s:
+            qp = QueryParser("app_id", schema=self.index.schema)
+            q = qp.parse(id)
+            results = s.search(q)
+            ret = {"data": [dict(hit) for hit in results]}
+        return ret
 
     def search_index(self, queryEntered): # searches the index returning the titles, years, and total results
         
-        title = list()
-        years = list()
-        ids = list()
+        res = list()
         with self.index.searcher(weighting=scoring.TF_IDF()) as search:
             app_id_facet = sorting.FieldFacet("app_id", reverse=True)
             query = MultifieldParser(self.search_fields, schema=self.index.schema, group=self.junction_type)
             query = query.parse(queryEntered)               # Pass in the searcher's config values
-            results = search.search(query, limit=None)      # Look over the whole index
+            results = search.search_page(query, 1)      # Look over the whole index
 
             for x in results:
-                title.append(x['title'])
-                years.append(x['release_date'])             # Grab the titles and years
-                ids.append(x['app_id'])
+                res.append({
+                    "title": x["title"],
+                    "id": x["app_id"],
+                    "img": x["image_url"],
+                    "desc": x["short_desc"]
+                })
 
-        return title, years, len(results), ids
+        return res 
 
 class steamScraper(object):
 
@@ -273,6 +287,8 @@ if __name__=="__main__":
 
 # Example of seraching the index
     idx = gameSearchEngine()
-    idx.search("madeline platform pixel strawberry platformer precise tight")
-
-    idx.all_docs() # prints the number of docs in the index
+    # r= idx.search("madeline platform pixel strawberry platformer precise tight")
+    r = idx.get_by_id("276730")
+    print(r["data"][0]['title'])
+    #print(r)
+    # idx.all_docs() # prints the number of docs in the index
