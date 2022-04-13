@@ -16,7 +16,7 @@
             </v-btn>
           </v-col>
         </v-row>
-        <v-row v-for="item in data" :key="item.id">
+        <v-row v-for="item in results" :key="item.id">
           <v-col>
             <v-card @click="snackbar = true; sbtext = item.id" density="compact">
               <v-row no-gutters align="center">
@@ -84,69 +84,18 @@ export default {
     isFilter: false,
     snackbar: false,
     sbtext: "",
-    data: [
-      {
-        id: 0,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 1,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 2,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 3,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 4,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 5,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 6,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 7,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 8,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-      {
-        id: 9,
-        img: "https://cdn.akamai.steamstatic.com/steam/apps/218620/header.jpg?t=1646834144",
-        title: "Payday 2",
-        desc: "PAYDAY 2 is an action-packed, four-player co-op shooter that once again lets gamers don the masks of the original PAYDAY crew - Dallas, Hoxton, Wolf and Chains - as they descend on Washington DC for an epic crime spree."
-      },
-    ]
-  })
+    results: [],
+  }),
+  computed: {
+
+  },
+  mounted() {
+    let {_, ...params} = this.$route.query;
+    _;
+    fetch(`${process.env.VUE_APP_API_URL}/search?${new URLSearchParams(params)}`)
+      .then(resp => resp.json())
+      .then(data => (this.results = data.results));
+  }
 }
 </script>
 
