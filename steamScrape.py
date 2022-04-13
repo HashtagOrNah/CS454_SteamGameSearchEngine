@@ -16,6 +16,7 @@ from whoosh.qparser import QueryParser
 from whoosh.qparser import MultifieldParser
 from whoosh import scoring
 from whoosh import qparser
+from whoosh import sorting
 
 class gameSearchEngine(object):
 
@@ -23,26 +24,26 @@ class gameSearchEngine(object):
         self.index = self.init_index(ix_dir)
         self.n = 10
         self.junction_type = qparser.OrGroup
-        self.search_fields = ['title', 'about_the_game']
+        self.search_fields = ["app_id, title", "short_desc", "about_the_game"]
 
     def init_index(self, ix_dir):            # Initializes the index, using optional parameters if provided
         if whoosh.index.exists_in(ix_dir):
             return open_dir(ix_dir)
 
-        schema = Schema(app_id = ID(stored=True, unique=True),
+        schema = Schema(app_id = ID(stored=True, unique=True, sortable=True),
                         title = TEXT(stored=True),
                         short_desc = TEXT(stored=True),
                         about_the_game = TEXT(stored=True),
-                        achievements = NUMERIC(stored=True),
-                        full_price = NUMERIC(stored=True),
-                        discount_price = NUMERIC(stored=True),
-                        discount_percent = NUMERIC(stored=True),
+                        achievements = NUMERIC(stored=True, sortable=True),
+                        full_price = NUMERIC(stored=True, sortable=True),
+                        discount_price = NUMERIC(stored=True, sortable=True),
+                        discount_percent = NUMERIC(stored=True, sortable=True),
                         platforms = KEYWORD(stored=True,commas=True,lowercase=True),
                         genres = KEYWORD(stored=True,commas=True,lowercase=True),
                         developers = KEYWORD(stored=True,commas=True,lowercase=True),
                         publishers = KEYWORD(stored=True,commas=True,lowercase=True),
                         image_url = TEXT(stored=True),
-                        total_reviews = NUMERIC(stored=True),
+                        total_reviews = NUMERIC(stored=True, sortable=True),
                         release_date = TEXT(stored=True))
 
         return create_in(ix_dir, schema)
@@ -87,10 +88,10 @@ class gameSearchEngine(object):
         writer.commit()
     
     def search(self, query):  # Passes in the query and then prints the results
-        title,year,total_results = self.search_index(query)
-        self.print_topN_results(title,year,total_results)
+        title,year,total_results, ids = self.search_index(query)
+        self.print_topN_results(title,year,total_results, ids)
     
-    def print_topN_results(self, results, years, total_results): # Prints the results to n elements
+    def print_topN_results(self, results, years, total_results, ids): # Prints the results to n elements
         print()
         if len(results) == 0: 
             print("No results found... :(\n")   # Results is empty
@@ -98,7 +99,7 @@ class gameSearchEngine(object):
         return_count = 0
         for i in range(self.n):     # Try to print n elements from results
             return_count += 1
-            print(results[i] + " - (" + years[i] + ")")
+            print(results[i] + " - (" + years[i] + ")" + " id: " + ids[i])
             if results.index(results[i]) == len(results)-1: # If there arent enough elements then break
                 break
         print("\nFound %d results, returned %d\n"%(total_results, return_count)) # print total vs returned results
@@ -106,24 +107,32 @@ class gameSearchEngine(object):
     def all_docs(self):
         alld = self.index.searcher().documents()
         i = 0
-        for _ in alld:
+        max = 0
+        for x in alld:
+
+            if int(x['app_id']) > max:
+                max = int(x['app_id'])
             i+=1
+        print(max)
         print(i)
 
     def search_index(self, queryEntered): # searches the index returning the titles, years, and total results
         
         title = list()
         years = list()
+        ids = list()
         with self.index.searcher(weighting=scoring.TF_IDF()) as search:
+            app_id_facet = sorting.FieldFacet("app_id", reverse=True)
             query = MultifieldParser(self.search_fields, schema=self.index.schema, group=self.junction_type)
             query = query.parse(queryEntered)               # Pass in the searcher's config values
             results = search.search(query, limit=None)      # Look over the whole index
-            
+
             for x in results:
                 title.append(x['title'])
                 years.append(x['release_date'])             # Grab the titles and years
+                ids.append(x['app_id'])
 
-        return title, years, len(results)
+        return title, years, len(results), ids
 
 class steamScraper(object):
 
@@ -249,8 +258,8 @@ if __name__=="__main__":
 
 
 # Exampel of scraping
-    # key = "" # Steam key
-    # scraper = steamScraper(key, "207080")
+    # key = "1E55C697189C8CEF748C6599CB9EDBC4" # Steam key
+    # scraper = steamScraper(key, "565120")
     # x = scraper.get_ids()
     # idx = gameSearchEngine()
     # for id in x:
@@ -264,6 +273,6 @@ if __name__=="__main__":
 
 # Example of seraching the index
     idx = gameSearchEngine()
-    idx.search("action")
+    idx.search("madeline platform pixel strawberry platformer precise tight")
 
-    # idx.all_docs() # prints the number of docs in the index
+    idx.all_docs() # prints the number of docs in the index
