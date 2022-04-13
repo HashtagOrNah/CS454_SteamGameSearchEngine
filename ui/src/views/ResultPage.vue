@@ -92,7 +92,7 @@ export default {
   mounted() {
     let {_, ...params} = this.$route.query;
     _;
-    fetch(`${process.env.VUE_APP_API_URL}/search?${new URLSearchParams(params)}`)
+    fetch(`${location.origin}/api/search?${new URLSearchParams(params)}`)
       .then(resp => resp.json())
       .then(data => (this.results = data.results));
   }
