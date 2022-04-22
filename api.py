@@ -1,7 +1,8 @@
+from ast import Str
 from flask import Flask
 from flask import request
 from whoosh.searching import ResultsPage
-
+from external_scraping import PriceFetcher
 from steamScrape import gameSearchEngine
 from whoosh import scoring
 
@@ -50,3 +51,10 @@ def search():
         resp["is_last_page"] = rp.is_last_page()
 
     return resp
+
+@app.route('/api/<gid>/prices')
+def price_search(gid):
+    engine = gameSearchEngine()
+    game_name = engine.get_by_id(str(gid))
+    pf = PriceFetcher()
+    pf.get_all_prices(game_name)
