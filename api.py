@@ -57,4 +57,6 @@ def price_search(gid):
     engine = gameSearchEngine()
     game_name = engine.get_by_id(str(gid))
     pf = PriceFetcher()
-    pf.get_all_prices(game_name)
+    prices = pf.get_all_prices(game_name)
+
+    return prices
