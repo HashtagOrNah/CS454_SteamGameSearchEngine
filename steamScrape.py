@@ -1,12 +1,4 @@
-from functools import total_ordering
-from platform import release
 import requests
-from bs4 import BeautifulSoup
-import json
-import re
-import time
-import sys
-import os, os.path
 import whoosh
 import json
 from whoosh.index import create_in
@@ -14,9 +6,7 @@ from whoosh.index import open_dir
 from whoosh.fields import *
 from whoosh.qparser import QueryParser
 from whoosh.qparser import MultifieldParser
-from whoosh import scoring
 from whoosh import qparser
-from whoosh import sorting
 
 class gameSearchEngine(object):
 
@@ -86,14 +76,7 @@ class gameSearchEngine(object):
                             release_date=data[14])
 
         writer.commit()
-    
-    def search(self, query):  # Passes in the query and then prints the results
-        # title,year,total_results, ids= self.search_index(query)
-        #self.print_topN_results(title,year,total_results, ids)
-        results = self.search_index(query)
-        return results
 
-    
     def print_topN_results(self, results, years, total_results, ids): # Prints the results to n elements
         print()
         if len(results) == 0: 
@@ -129,24 +112,9 @@ class gameSearchEngine(object):
             ret = {"data": [dict(hit) for hit in results]}
         return ret
 
-    def search_index(self, queryEntered): # searches the index returning the titles, years, and total results
-        
-        res = list()
-        with self.index.searcher(weighting=scoring.TF_IDF()) as search:
-            app_id_facet = sorting.FieldFacet("app_id", reverse=True)
-            query = MultifieldParser(self.search_fields, schema=self.index.schema, group=self.junction_type)
-            query = query.parse(queryEntered)               # Pass in the searcher's config values
-            results = search.search_page(query, 1)      # Look over the whole index
+    def query_parser(self):
+        return MultifieldParser(self.search_fields, schema=self.index.schema, group=self.junction_type)
 
-            for x in results:
-                res.append({
-                    "title": x["title"],
-                    "id": x["app_id"],
-                    "img": x["image_url"],
-                    "desc": x["short_desc"]
-                })
-
-        return res 
 
 class steamScraper(object):
 

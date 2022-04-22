@@ -16,6 +16,11 @@
             </v-btn>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col>
+            Results: {{ resultCount }}
+          </v-col>
+        </v-row>
         <v-row v-for="item in results" :key="item.id">
           <v-col>
             <v-card @click="snackbar = true; sbtext = item.id" density="compact">
@@ -85,6 +90,7 @@ export default {
     snackbar: false,
     sbtext: "",
     results: [],
+    resultCount: 0,
   }),
   computed: {
 
@@ -94,7 +100,10 @@ export default {
     _;
     fetch(`${location.origin}/api/search?${new URLSearchParams(params)}`)
       .then(resp => resp.json())
-      .then(data => (this.results = data.results));
+      .then(data => {
+        this.results = data.results
+        this.resultCount = data.result_count
+      });
   }
 }
 </script>

@@ -1,3 +1,5 @@
 gunicorn
 flask
 whoosh
+requests
+bs4
