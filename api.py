@@ -57,6 +57,6 @@ def price_search(gid):
     engine = gameSearchEngine()
     game_name = engine.get_by_id(str(gid))
     pf = PriceFetcher()
-    prices = pf.get_all_prices(game_name)
+    prices = pf.get_all_prices(game_name) # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
 
     return prices
