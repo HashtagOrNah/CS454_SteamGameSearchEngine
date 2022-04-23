@@ -7,16 +7,15 @@ from steamScrape import gameSearchEngine
 from whoosh import scoring
 
 app = Flask(__name__)
-
+engine = gameSearchEngine()
 
 @app.route('/api/')
 def hello_world():
     return "<p>Hello, World!</p>"
 
-
 @app.route('/api/search')
 def search():
-    engine = gameSearchEngine()
+    global engine
     # parse request args
     params = request.args.to_dict()
     if "q" not in params or params["q"] == "":
@@ -52,9 +51,15 @@ def search():
 
     return resp
 
+@app.route('/api/<gid>/details')
+def get_details(gid):
+    global engine
+    game_data = engine.get_by_id(gid)
+    return game_data['data'][0]
+
 @app.route('/api/<gid>/prices')
 def price_search(gid):
-    engine = gameSearchEngine()
+    global engine
     game_name = engine.get_by_id(str(gid))
     pf = PriceFetcher()
     prices = pf.get_all_prices(game_name) # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
