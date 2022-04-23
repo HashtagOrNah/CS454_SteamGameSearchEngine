@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory} from 'vue-router'
 import HomePage from '@/views/HomePage.vue'
 import ResultPage from "@/views/ResultPage";
+import DetailPage from "@/views/DetailPage";
 
 const routes = [
     {
@@ -12,6 +13,11 @@ const routes = [
         path: '/search',
         name: 'result',
         component: ResultPage
+    },
+    {
+        path: '/detail/:gid',
+        name: 'detail',
+        component: DetailPage
     }
 ]
 
