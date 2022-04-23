@@ -60,8 +60,8 @@ def get_details(gid):
 @app.route('/api/<gid>/prices')
 def price_search(gid):
     global engine
-    game_name = engine.get_by_id(str(gid))
+    game_data = engine.get_by_id(str(gid))
     pf = PriceFetcher()
-    prices = pf.get_all_prices(game_name) # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
+    prices = pf.get_all_prices(game_data['title']) # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
 
     return prices
