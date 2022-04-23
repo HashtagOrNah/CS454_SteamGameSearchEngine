@@ -87,7 +87,7 @@
             </v-row>
             <v-row>
               <v-col>
-                <v-card>
+                <v-card @click="gotoSteam(this.gid)">
                   <v-card-text>
                     Link To Original Page
                   </v-card-text>
@@ -118,6 +118,9 @@ export default {
     back() {
       this.$router.go(-1)
     },
+    gotoSteam(gid) {
+      window.open('https://store.steampowered.com/app/' + gid, '_blank' )
+    },
     getPriceStr(price) {
       let real_price = price / 100
       real_price = real_price.toLocaleString("en-US", {style:"currency", currency:"USD"})
@@ -127,11 +130,13 @@ export default {
   data: () => ({
     snackbar: false,
     sbtext: "",
+    gid: "",
     details: {},
     prices: [],
   }),
   mounted() {
-    fetch(`${location.origin}/api/${this.$route.params.gid}/details`)
+    this.gid = this.$route.params.gid
+    fetch(`${location.origin}/api/${this.gid}/details`)
       .then(resp => resp.json())
       .then(data => {
         this.details = data
