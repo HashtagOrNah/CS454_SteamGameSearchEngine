@@ -96,11 +96,19 @@ def get_unique_genres():
 @app.route('/api/dev/<frag_str>')
 def get_unique_devs(frag_str):
     global engine
-    dev_list = engine.index.searcher().suggest("developers", frag_str.lower(), maxdist=4)
+    results = engine.index.reader().expand_prefix("developers", frag_str.lower())
+    max = 10
+    dev_list = []
+    for x in results:
+        dev_list.append(x.decode("UTF-8"))
     return {"devs": dev_list}
 
 @app.route('/api/pub/<frag_str>')
 def get_unique_pubs(frag_str):
     global engine
-    pub_list = engine.index.searcher().suggest("publishers", frag_str.lower(), maxdist=4)
+    results = engine.index.reader().expand_prefix("publishers", frag_str.lower())
+    max = 10
+    pub_list = []
+    for x in results:
+        pub_list.append(x.decode("UTF-8"))
     return {"pubs": pub_list}
