@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid style="min-height: calc(100vh - 80px)">
     <v-row justify="center">
       <v-col cols="10">
         <v-row style="margin: 2vh; margin-top: 0">

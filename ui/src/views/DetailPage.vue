@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid style="min-height: calc(100vh - 80px)">
     <v-row>
       <v-col cols="10" offset="1">
         <v-row>
@@ -77,11 +77,12 @@
               <v-col>
                 <v-card align="center">
                   <v-card-title>
-                    Scraped Prices
+                    Other Prices
                   </v-card-title>
-                  <v-divider style="margin-bottom: 1rem"></v-divider>
+                  <v-divider></v-divider>
                   <v-row v-for="item in prices" :key="item.site">
                     <v-col>
+                      <div style="margin-top: 1rem"></div>
                       <v-card @click="gotoLink(item.link)" variant="outlined" style="margin-right: 1rem;margin-left: 1rem">
                         <v-card-title>
                           {{ item.site }}
@@ -92,6 +93,12 @@
                       </v-card>
                     </v-col>
                   </v-row>
+                  <v-progress-linear v-if="pricesLoading" indeterminate></v-progress-linear>
+                  <v-card-actions>
+                    <v-btn :disabled="prices.length > 0" @click="scrapePrices()">
+                      Search Websites
+                    </v-btn>
+                  </v-card-actions>
                 </v-card>
               </v-col>
             </v-row>
@@ -129,6 +136,16 @@ export default {
       let real_price = price / 100
       real_price = real_price.toLocaleString("en-US", {style:"currency", currency:"USD"})
       return real_price
+    },
+    scrapePrices() {
+      this.pricesLoading = true
+      fetch(`${location.origin}/api/${this.$route.params.gid}/prices`)
+          .then(resp => resp.json())
+          .then(data => {
+            this.prices = data.prices
+            console.log(this.prices)
+          })
+          .finally(() => {this.pricesLoading = false});
     }
   },
   data: () => ({
@@ -137,6 +154,7 @@ export default {
     gid: "",
     details: {},
     prices: [],
+    pricesLoading: false,
   }),
   mounted() {
     this.gid = this.$route.params.gid
@@ -145,12 +163,6 @@ export default {
       .then(data => {
         this.details = data
       });
-    fetch(`${location.origin}/api/${this.$route.params.gid}/prices`)
-        .then(resp => resp.json())
-        .then(data => {
-          this.prices = data.prices
-          console.log(this.prices)
-        });
   }
 }
 </script>

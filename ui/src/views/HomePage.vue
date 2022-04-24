@@ -1,7 +1,7 @@
 <template>
   <v-form>
-    <v-container fluid>
-      <v-row class="content" align="center" justify="center">
+    <v-container fluid style="min-height: calc(100vh - 80px)" >
+      <v-row style="min-height: 80vh" align="center" justify="center">
         <v-col cols="8">
           <v-row>
             <v-col cols="12">
@@ -22,18 +22,31 @@
                     <v-col cols="4">
                       <v-autocomplete
                           v-model="sGenres"
+                          v-model:search="vGenre"
                           :items="genres"
                           :loading="genres.length === 0"
                           label="Genres"
-                          chips small-chips multiple>
+                          chips closable-chips small-chips multiple>
                       </v-autocomplete>
                     </v-col>
                     <v-col cols="4">
-                      <v-autocomplete v-model="sDev" :items="devs" label="Developer" filled>
+                      <v-autocomplete
+                          v-model="sDev"
+                          v-model:search="vDev"
+                          :items="devs"
+                          :loading="devsLoading"
+                          label="Developer"
+                          filled clearable>
                       </v-autocomplete>
                     </v-col>
                     <v-col cols="4">
-                      <v-autocomplete v-model="sPub" :items="pubs" label="Publisher" filled>
+                      <v-autocomplete
+                          v-model="sPub"
+                          v-model:search="vPub"
+                          :items="pubs"
+                          :loading="pubsLoading"
+                          label="Publisher"
+                          filled clearable>
                       </v-autocomplete>
                     </v-col>
                   </v-row>
@@ -60,9 +73,6 @@
 </template>
 
 <style scoped>
-.content {
-  height: calc(100vh - 88px)
-}
 </style>
 
 <script>
@@ -71,14 +81,45 @@ export default {
     search: '',
     isAdvSearch: false,
     genres: [],
-    pubs: ["foo", "bar", "fizz", "buzz"],
-    devs: ["foo", "bar", "fizz", "buzz"],
+    genresLoading: false,
+    pubs: [],
+    pubsLoading: false,
+    devs: [],
+    devsLoading: false,
     sGenres: [],
     sDev: null,
     sPub: null,
+    vGenre: "",
+    vDev: "",
+    vPub: "",
   }),
+  watch: {
+    vDev(val) {
+      if (val.length < 3) return
+
+      this.devsLoading = true
+      fetch(`${location.origin}/api/dev/${val}`)
+          .then(resp => resp.json())
+          .then(data => {
+            this.devs = data.devs
+          })
+          .finally(() => (this.devsLoading = false));
+
+    },
+    vPub(val) {
+      if (val.length < 3) return
+
+      this.pubsLoading = true
+      fetch(`${location.origin}/api/pub/${val}`)
+          .then(resp => resp.json())
+          .then(data => {
+            this.pubs = data.pubs
+          })
+          .finally(() => (this.pubsLoading = false));
+    },
+  },
   methods: {
-    submit(){
+    submit() {
       let q = {q: this.search}
       if (this.isAdvSearch) {
         q.isAdvSearch = true
@@ -117,18 +158,6 @@ export default {
         .then(data => {
           this.genres = data.genres
         });
-    /*
-    fetch(`${location.origin}/api/dev`)
-        .then(resp => resp.json())
-        .then(data => {
-          this.devs = data.devs
-        });
-    fetch(`${location.origin}/api/pub`)
-        .then(resp => resp.json())
-        .then(data => {
-          this.pubs = data.pubs
-        });
-     */
   }
 }
 </script>
