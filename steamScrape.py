@@ -107,9 +107,10 @@ class gameSearchEngine(object):
         max = 0
         total = 0
         for x in alld:
-            max = x['app_id']
+            if int(max) < int(x['app_id']):
+                max = x['app_id']
             total += 1
-        print("Out of %s the max is %s" % (total, max))
+            
         return max
 
     def get_unique_attr(self, attr_name):
@@ -117,7 +118,6 @@ class gameSearchEngine(object):
         alld = self.index.searcher().documents()
         uniques = []
         for x in alld:
-            print(x[attr_name])
             att_list = x[attr_name].split(",")
             for y in att_list:
                 if y not in uniques:
@@ -262,25 +262,25 @@ class steamScraper(object):
 if __name__=="__main__":
 
 # Exampel of scraping
-    key = "1E55C697189C8CEF748C6599CB9EDBC4" # Steam key
-    scraper = steamScraper(key, "621930")
-    x = scraper.get_ids()
-    idx = gameSearchEngine()
-    for id in x:
-        id_data = scraper.get_id_data(id)
+    # key = "1E55C697189C8CEF748C6599CB9EDBC4" # Steam key
+    # scraper = steamScraper(key, "621930")
+    # x = scraper.get_ids()
+    # idx = gameSearchEngine()
+    # for id in x:
+    #     id_data = scraper.get_id_data(id)
 
-        if id_data == None:
-            time.sleep(2)
-            continue
-        idx.add_index_doc(id_data)
-        time.sleep(2)
+    #     if id_data == None:
+    #         time.sleep(2)
+    #         continue
+    #     idx.add_index_doc(id_data)
+    #     time.sleep(2)
 
 # Example of seraching the index
-    # idx = gameSearchEngine()
-    # # r= idx.search("madeline platform pixel strawberry platformer precise tight")
-    # # r = idx.get_by_id("504230")
-    # # print(r['data'][0]['release_date'])
-    # #print(r)
-    # #r = idx.all_docs() # prints the number of docs in the index
-    # r = idx.get_max_id()
+    idx = gameSearchEngine()
+    # r= idx.search("madeline platform pixel strawberry platformer precise tight")
+    # r = idx.get_by_id("621930")
+    # print(r['data'][0]['release_date'])
     # print(r)
+    #r = idx.all_docs() # prints the number of docs in the index
+    r = idx.get_max_id()
+    print(r)
