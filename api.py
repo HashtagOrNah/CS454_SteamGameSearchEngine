@@ -84,3 +84,21 @@ def price_search(gid):
     prices = pf.get_all_prices(game_data['data'][0]['title']) # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
 
     return {"prices": prices}
+
+@app.route('/api/genres')
+def get_unique_genres():
+    global engine
+    genre_list = engine.get_unique_attr("genres")
+    return {"genres": genre_list}
+
+@app.route('/api/dev')
+def get_unique_devs():
+    global engine
+    dev_list = engine.get_unique_attr("developers")
+    return {"devs": dev_list}
+
+@app.route('/api/pub')
+def get_unique_pubs():
+    global engine
+    pub_list = engine.get_unique_attr("publishers")
+    return {"pubs": pub_list}

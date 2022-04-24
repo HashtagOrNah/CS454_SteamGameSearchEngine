@@ -1,6 +1,7 @@
 import requests
 import whoosh
 import json
+import time
 from whoosh.index import create_in
 from whoosh.index import open_dir
 from whoosh.fields import *
@@ -92,16 +93,38 @@ class gameSearchEngine(object):
     
     def all_docs(self):
         alld = self.index.searcher().documents()
-        i = 0
-        max = 0
-        for x in alld:
 
-            if int(x['app_id']) > max:
-                max = int(x['app_id'])
-            i+=1
-        print(max)
-        print(i)
+        #return_dict = {"data": [dict(x) for x in alld]}
+        ids = []
+        for x in alld:
+            ids.append(x['app_id'])
+
+        return ids
     
+    def get_max_id(self):
+
+        alld = self.index.searcher().documents()
+        max = 0
+        total = 0
+        for x in alld:
+            max = x['app_id']
+            total += 1
+        print("Out of %s the max is %s" % (total, max))
+        return max
+
+    def get_unique_attr(self, attr_name):
+
+        alld = self.index.searcher().documents()
+        uniques = []
+        for x in alld:
+            print(x[attr_name])
+            att_list = x[attr_name].split(",")
+            for y in att_list:
+                if y not in uniques:
+                    uniques.append(y)
+
+        return uniques
+
     def get_by_id(self, id):
 
         ret = None
@@ -238,25 +261,26 @@ class steamScraper(object):
 
 if __name__=="__main__":
 
-
 # Exampel of scraping
-    # key = "1E55C697189C8CEF748C6599CB9EDBC4" # Steam key
-    # scraper = steamScraper(key, "565120")
-    # x = scraper.get_ids()
-    # idx = gameSearchEngine()
-    # for id in x:
-    #     id_data = scraper.get_id_data(id)
+    key = "1E55C697189C8CEF748C6599CB9EDBC4" # Steam key
+    scraper = steamScraper(key, "621930")
+    x = scraper.get_ids()
+    idx = gameSearchEngine()
+    for id in x:
+        id_data = scraper.get_id_data(id)
 
-    #     if id_data == None:
-    #         time.sleep(2)
-    #         continue
-    #     idx.add_index_doc(id_data)
-    #     time.sleep(2)
+        if id_data == None:
+            time.sleep(2)
+            continue
+        idx.add_index_doc(id_data)
+        time.sleep(2)
 
 # Example of seraching the index
-    idx = gameSearchEngine()
-    # r= idx.search("madeline platform pixel strawberry platformer precise tight")
-    r = idx.get_by_id("276730")
-    print(r["data"][0]['title'])
-    #print(r)
-    # idx.all_docs() # prints the number of docs in the index
+    # idx = gameSearchEngine()
+    # # r= idx.search("madeline platform pixel strawberry platformer precise tight")
+    # # r = idx.get_by_id("504230")
+    # # print(r['data'][0]['release_date'])
+    # #print(r)
+    # #r = idx.all_docs() # prints the number of docs in the index
+    # r = idx.get_max_id()
+    # print(r)
