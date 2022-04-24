@@ -11,9 +11,11 @@ from whoosh.query import Term
 app = Flask(__name__)
 engine = gameSearchEngine()
 
+
 @app.route('/api/')
 def hello_world():
     return "<p>Hello, World!</p>"
+
 
 @app.route('/api/search')
 def search():
@@ -23,7 +25,6 @@ def search():
 
     if "q" not in params or params["q"] == "":
         return "Missing Query", 400
-
 
     query = engine.query_parser().parse(params["q"])
     pagenum = 1
@@ -43,22 +44,22 @@ def search():
     with engine.index.searcher(weighting=scoring.TF_IDF) as s:
 
         advanced_terms = []
-        if "genre" in params:
-            for x in params['genre'].split(","):
-                advanced_terms.append(Term("genres", x))
+        if "genres" in params:
+            for x in params['genres'].split(","):
+                advanced_terms.append(Term("genres", x.lower()))
         if "pub" in params:
-            for x in params['pub'].split(","):
-                advanced_terms.append(Term("publishers", x))
+            advanced_terms.append(Term("publishers", params["pub"].lower()))
         if "dev" in params:
-            for x in params['dev'].split(","):
-                advanced_terms.append(Term("developers", x))
+            advanced_terms.append(Term("developers", params["dev"].lower()))
 
-        resp["result_count"] = s.search(query, scored=False).estimated_length()
-    
-        #rp = s.search_page(query=query, pagenum=pagenum).And(advanced_terms)
-        fq = And(advanced_terms)
-        r = s.search(query, filter=fq)
-        rp = ResultsPage(r, pagenum)
+        search_kwargs = dict()
+        if advanced_terms:
+            print(advanced_terms)
+            search_kwargs["filter"] = And(advanced_terms)
+
+        rp = s.search_page(query=query, pagenum=pagenum, **search_kwargs)
+        resp["result_count"] = s.search(query, scored=False, **search_kwargs).estimated_length()
+
         for x in rp:
             resp["results"].append({
                 "title": x["title"],
@@ -70,20 +71,24 @@ def search():
 
     return resp
 
+
 @app.route('/api/<gid>/details')
 def get_details(gid):
     global engine
     game_data = engine.get_by_id(gid)
     return game_data['data'][0]
 
+
 @app.route('/api/<gid>/prices')
 def price_search(gid):
     global engine
     game_data = engine.get_by_id(str(gid))
     pf = PriceFetcher()
-    prices = pf.get_all_prices(game_data['data'][0]['title']) # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
+    # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
+    prices = pf.get_all_prices(game_data['data'][0]['title'])
 
     return {"prices": prices}
+
 
 @app.route('/api/genres')
 def get_unique_genres():
@@ -91,11 +96,13 @@ def get_unique_genres():
     genre_list = engine.get_unique_attr("genres")
     return {"genres": genre_list}
 
+
 @app.route('/api/dev')
 def get_unique_devs():
     global engine
     dev_list = engine.get_unique_attr("developers")
     return {"devs": dev_list}
+
 
 @app.route('/api/pub')
 def get_unique_pubs():

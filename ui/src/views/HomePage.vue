@@ -20,7 +20,12 @@
                   </v-row>
                   <v-row>
                     <v-col cols="4">
-                      <v-autocomplete v-model="sGenres" :items="genres" label="Genres" chips small-chips multiple>
+                      <v-autocomplete
+                          v-model="sGenres"
+                          :items="genres"
+                          :loading="genres.length === 0"
+                          label="Genres"
+                          chips small-chips multiple>
                       </v-autocomplete>
                     </v-col>
                     <v-col cols="4">
@@ -65,7 +70,7 @@ export default {
   data: () => ({
     search: '',
     isAdvSearch: false,
-    genres: ["foo", "bar", "fizz", "buzz"],
+    genres: [],
     pubs: ["foo", "bar", "fizz", "buzz"],
     devs: ["foo", "bar", "fizz", "buzz"],
     sGenres: [],
@@ -107,7 +112,23 @@ export default {
     if (qparams.pub) {
       this.sPub = qparams.pub
     }
-    // todo: add api call to populate genre options
+    fetch(`${location.origin}/api/genres`)
+        .then(resp => resp.json())
+        .then(data => {
+          this.genres = data.genres
+        });
+    /*
+    fetch(`${location.origin}/api/dev`)
+        .then(resp => resp.json())
+        .then(data => {
+          this.devs = data.devs
+        });
+    fetch(`${location.origin}/api/pub`)
+        .then(resp => resp.json())
+        .then(data => {
+          this.pubs = data.pubs
+        });
+     */
   }
 }
 </script>
