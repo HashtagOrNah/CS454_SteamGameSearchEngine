@@ -54,7 +54,6 @@ def search():
 
         search_kwargs = dict()
         if advanced_terms:
-            print(advanced_terms)
             search_kwargs["filter"] = And(advanced_terms)
 
         rp = s.search_page(query=query, pagenum=pagenum, **search_kwargs)
@@ -70,7 +69,6 @@ def search():
         resp["is_last_page"] = rp.is_last_page()
 
     return resp
-
 
 @app.route('/api/<gid>/details')
 def get_details(gid):
@@ -89,23 +87,20 @@ def price_search(gid):
 
     return {"prices": prices}
 
-
 @app.route('/api/genres')
 def get_unique_genres():
     global engine
     genre_list = engine.get_unique_attr("genres")
     return {"genres": genre_list}
 
-
-@app.route('/api/dev')
-def get_unique_devs():
+@app.route('/api/dev/<frag_str>')
+def get_unique_devs(frag_str):
     global engine
-    dev_list = engine.get_unique_attr("developers")
+    dev_list = engine.index.searcher().suggest("developers", frag_str.lower(), maxdist=4)
     return {"devs": dev_list}
 
-
-@app.route('/api/pub')
-def get_unique_pubs():
+@app.route('/api/pub/<frag_str>')
+def get_unique_pubs(frag_str):
     global engine
-    pub_list = engine.get_unique_attr("publishers")
+    pub_list = engine.index.searcher().suggest("publishers", frag_str.lower(), maxdist=4)
     return {"pubs": pub_list}
