@@ -5,6 +5,8 @@ from whoosh.searching import ResultsPage
 from external_scraping import PriceFetcher
 from steamScrape import gameSearchEngine
 from whoosh import scoring
+from whoosh.query import And
+from whoosh.query import Term
 
 app = Flask(__name__)
 engine = gameSearchEngine()
@@ -21,14 +23,7 @@ def search():
 
     if "q" not in params or params["q"] == "":
         return "Missing Query", 400
-    
-    genres = False
-    pubs = False
-    devs = False
 
-    if "genres" in params: genres = True
-    if "pubs" in params: pubs = True
-    if "devs" in params: devs = True
 
     query = engine.query_parser().parse(params["q"])
     pagenum = 1
@@ -46,9 +41,24 @@ def search():
 
     # prepare searcher
     with engine.index.searcher(weighting=scoring.TF_IDF) as s:
-        resp["result_count"] = s.search(query, scored=False).estimated_length()
 
-        rp = s.search_page(query=query, pagenum=pagenum)
+        advanced_terms = []
+        if "genre" in params:
+            for x in params['genre'].split(","):
+                advanced_terms.append(Term("genres", x))
+        if "pub" in params:
+            for x in params['pub'].split(","):
+                advanced_terms.append(Term("publishers", x))
+        if "dev" in params:
+            for x in params['dev'].split(","):
+                advanced_terms.append(Term("developers", x))
+
+        resp["result_count"] = s.search(query, scored=False).estimated_length()
+    
+        #rp = s.search_page(query=query, pagenum=pagenum).And(advanced_terms)
+        fq = And(advanced_terms)
+        r = s.search(query, filter=fq)
+        rp = ResultsPage(r, pagenum)
         for x in rp:
             resp["results"].append({
                 "title": x["title"],
