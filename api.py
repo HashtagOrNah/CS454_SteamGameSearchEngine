@@ -4,12 +4,14 @@ from flask import request
 from whoosh.searching import ResultsPage
 from external_scraping import PriceFetcher
 from steamScrape import gameSearchEngine
+from whoosh import sorting
 from whoosh import scoring
 from whoosh.query import And
 from whoosh.query import Term
 
 app = Flask(__name__)
 engine = gameSearchEngine()
+search_results = []
 
 
 @app.route('/api/')
@@ -56,7 +58,30 @@ def search():
         if advanced_terms:
             search_kwargs["filter"] = And(advanced_terms)
 
-        rp = s.search_page(query=query, pagenum=pagenum, **search_kwargs)
+        if "sortby" in params:
+            reverse = True
+            sort = params['sortby'].split("-")
+            if sort[1] == "asc": reverse = False
+
+            if sort[0] == "achievements": sortby = "achievements"
+
+            elif sort[0] == "release_date": 
+                if reverse == True:
+                    sortby = sorting.FunctionFacet(engine.date_sorter_reverse)
+                else:
+                    sortby = sorting.FunctionFacet(engine.date_sorter)
+
+            elif sort[0] == "price": sortby = "full_price"
+
+            elif sort[0] == "reviews": sortby = "total_reviews"
+
+            else: sortby = "title"
+
+            rp = s.search_page(query=query, pagenum=pagenum, **search_kwargs, reverse=reverse, sortedby=sortby)
+
+        else:
+            rp = s.search_page(query=query, pagenum=pagenum, **search_kwargs)
+
         resp["result_count"] = s.search(query, scored=False, **search_kwargs).estimated_length()
 
         for x in rp:
@@ -64,7 +89,11 @@ def search():
                 "title": x["title"],
                 "id": x["app_id"],
                 "img": x["image_url"],
-                "desc": x["short_desc"]
+                "desc": x["short_desc"],
+                "price": x["full_price"],
+                "reviews": x["total_reviews"],
+                "date": x['release_date'],
+                "achievements": x['achievements']
             })
         resp["is_last_page"] = rp.is_last_page()
 

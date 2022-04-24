@@ -8,6 +8,7 @@ from whoosh.fields import *
 from whoosh.qparser import QueryParser
 from whoosh.qparser import MultifieldParser
 from whoosh import qparser
+from whoosh import sorting
 
 class gameSearchEngine(object):
 
@@ -22,7 +23,7 @@ class gameSearchEngine(object):
             return open_dir(ix_dir)
 
         schema = Schema(app_id = ID(stored=True, unique=True, sortable=True),
-                        title = TEXT(stored=True),
+                        title = TEXT(stored=True, sortable=True),
                         short_desc = TEXT(stored=True),
                         about_the_game = TEXT(stored=True),
                         achievements = NUMERIC(stored=True, sortable=True),
@@ -110,7 +111,7 @@ class gameSearchEngine(object):
             if int(max) < int(x['app_id']):
                 max = x['app_id']
             total += 1
-            
+
         return max
 
     def get_unique_attr(self, attr_name):
@@ -134,6 +135,52 @@ class gameSearchEngine(object):
             results = s.search(q)
             ret = {"data": [dict(hit) for hit in results]}
         return ret
+    
+    def date_sorter_reverse(self, searcher, docnum):                    # Custom sorter for the release date format
+        date = searcher.stored_fields(docnum)['release_date']
+        try:
+            str_date = date.replace(",", "").split(" ")
+            if str_date[0] == 'Jan' : str_date[0] = "1"
+            elif str_date[0] == 'Feb' : str_date[0] = "2"
+            elif str_date[0] == 'Mar' : str_date[0] = "3"
+            elif str_date[0] == 'Apr' : str_date[0] = "4"
+            elif str_date[0] == 'May' : str_date[0] = "5"
+            elif str_date[0] == 'Jun' : str_date[0] = "6"
+            elif str_date[0] == 'Jul' : str_date[0] = "7"
+            elif str_date[0] == 'Aug' : str_date[0] = "8"
+            elif str_date[0] == 'Oct' : str_date[0] = "9"
+            elif str_date[0] == 'Sep' : str_date[0] = "10"
+            elif str_date[0] == 'Nov' : str_date[0] = "11"
+            elif str_date[0] == 'Dec' : str_date[0] = "12"
+            if len(str_date[1]) == 1: str_date[1] = "0" + str_date[1]
+            if len(str_date[0]) == 1: str_date[0] = "0" + str_date[0] 
+            num = str_date[2]+str_date[0]+str_date[1]
+            return int(num)
+        except:
+            return 100000000
+
+    def date_sorter(self, searcher, docnum):                    # Custom sorter for the release date format
+        date = searcher.stored_fields(docnum)['release_date']
+        try:
+            str_date = date.replace(",", "").split(" ")
+            if str_date[0] == 'Jan' : str_date[0] = "1"
+            elif str_date[0] == 'Feb' : str_date[0] = "2"
+            elif str_date[0] == 'Mar' : str_date[0] = "3"
+            elif str_date[0] == 'Apr' : str_date[0] = "4"
+            elif str_date[0] == 'May' : str_date[0] = "5"
+            elif str_date[0] == 'Jun' : str_date[0] = "6"
+            elif str_date[0] == 'Jul' : str_date[0] = "7"
+            elif str_date[0] == 'Aug' : str_date[0] = "8"
+            elif str_date[0] == 'Oct' : str_date[0] = "9"
+            elif str_date[0] == 'Sep' : str_date[0] = "10"
+            elif str_date[0] == 'Nov' : str_date[0] = "11"
+            elif str_date[0] == 'Dec' : str_date[0] = "12"
+            if len(str_date[1]) == 1: str_date[1] = "0" + str_date[1]
+            if len(str_date[0]) == 1: str_date[0] = "0" + str_date[0] 
+            num = str_date[2]+str_date[0]+str_date[1]
+            return int(num)
+        except:
+            return 1
 
     def query_parser(self):
         return MultifieldParser(self.search_fields, schema=self.index.schema, group=self.junction_type)
@@ -262,8 +309,8 @@ class steamScraper(object):
 if __name__=="__main__":
 
 # Exampel of scraping
-    # key = "1E55C697189C8CEF748C6599CB9EDBC4" # Steam key
-    # scraper = steamScraper(key, "621930")
+    # key = "" # Steam key
+    # scraper = steamScraper(key, "726500")
     # x = scraper.get_ids()
     # idx = gameSearchEngine()
     # for id in x:
@@ -277,10 +324,24 @@ if __name__=="__main__":
 
 # Example of seraching the index
     idx = gameSearchEngine()
-    # r= idx.search("madeline platform pixel strawberry platformer precise tight")
-    # r = idx.get_by_id("621930")
-    # print(r['data'][0]['release_date'])
-    # print(r)
-    #r = idx.all_docs() # prints the number of docs in the index
-    r = idx.get_max_id()
-    print(r)
+
+    with idx.index.searcher() as s:
+
+        qp = qparser.QueryParser("about_the_game", idx.index.schema)
+        q = qp.parse("action")
+        reverse = False
+
+        facet = "title"
+
+        r = s.search(q, sortedby=facet, reverse = reverse, limit = 15)
+
+        for hit in r:
+            print(hit['title'] + " || " + hit['release_date'])
+    # # r= idx.search("madeline platform pixel strawberry platformer precise tight")
+
+    # # r = idx.get_by_id("575170")
+    # # print(r['data'][0]['full_price'])
+    # # print(r)
+    # r = idx.all_docs() # prints the number of docs in the index
+    #r = idx.get_max_id()
+    # print(len(r))
