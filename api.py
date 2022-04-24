@@ -18,8 +18,17 @@ def search():
     global engine
     # parse request args
     params = request.args.to_dict()
+
     if "q" not in params or params["q"] == "":
         return "Missing Query", 400
+    
+    genres = False
+    pubs = False
+    devs = False
+
+    if "genres" in params: genres = True
+    if "pubs" in params: pubs = True
+    if "devs" in params: devs = True
 
     query = engine.query_parser().parse(params["q"])
     pagenum = 1
@@ -62,6 +71,6 @@ def price_search(gid):
     global engine
     game_data = engine.get_by_id(str(gid))
     pf = PriceFetcher()
-    prices = pf.get_all_prices(game_data[0]['title']) # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
+    prices = pf.get_all_prices(game_data['data'][0]['title']) # Returns list of dicts IE {site: site_name, price: game_price, link: sites_game_link}
 
-    return prices
+    return {"prices": prices}
