@@ -30,19 +30,13 @@
             <v-row>
               <v-col>
                 <v-card>
+                  <v-card-title>
+                    Description
+                  </v-card-title>
                   <v-card-text>
                     <div style="padding-left: 1rem; padding-right: 1rem">
                       <div v-html="details.about_the_game"></div>
                     </div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-card>
-                  <v-card-text>
-                    calculated prices
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -52,45 +46,52 @@
             <v-row>
               <v-col>
                 <v-card>
-                  <v-card-text>
-                    Steam Listed Price: {{ getPriceStr(this.details.full_price) }}
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-card>
-                  <v-card-text>
-                    Genres: {{ this.details.genres }}
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-card>
-                  <v-card-text>
-                    Developer(s): {{ this.details.developers }}
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <v-card>
-                  <v-card-text>
-                    Publisher(s): {{ this.details.publishers }}
-                  </v-card-text>
+                  <v-card-title>
+                    Details
+                  </v-card-title>
+                      <v-card-text>
+                        Steam Listed Price: {{ getPriceStr(this.details.full_price) }}
+                      </v-card-text>
+                      <v-card-text>
+                        Genres: {{ this.details.genres }}
+                      </v-card-text>
+                        <v-card-text>
+                          Developer(s): {{ this.details.developers }}
+                        </v-card-text>
+                        <v-card-text>
+                          Publisher(s): {{ this.details.publishers }}
+                        </v-card-text>
                 </v-card>
               </v-col>
             </v-row>
             <v-row>
               <v-col>
                 <v-card @click="gotoSteam(this.gid)">
-                  <v-card-text>
+                  <v-card-title>
                     Link To Original Page
-                  </v-card-text>
+                  </v-card-title>
+                </v-card>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <v-card align="center">
+                  <v-card-title>
+                    Scraped Prices
+                  </v-card-title>
+                  <v-divider style="margin-bottom: 1rem"></v-divider>
+                  <v-row v-for="item in prices" :key="item.site">
+                    <v-col>
+                      <v-card @click="gotoLink(item.link)" variant="outlined" style="margin-right: 1rem;margin-left: 1rem">
+                        <v-card-title>
+                          {{ item.site }}
+                        </v-card-title>
+                        <v-card-text>
+                          {{ item.price }}
+                        </v-card-text>
+                      </v-card>
+                    </v-col>
+                  </v-row>
                 </v-card>
               </v-col>
             </v-row>
@@ -121,6 +122,9 @@ export default {
     gotoSteam(gid) {
       window.open('https://store.steampowered.com/app/' + gid, '_blank' )
     },
+    gotoLink(link) {
+      window.open(link, '_blank' )
+    },
     getPriceStr(price) {
       let real_price = price / 100
       real_price = real_price.toLocaleString("en-US", {style:"currency", currency:"USD"})
@@ -141,11 +145,12 @@ export default {
       .then(data => {
         this.details = data
       });
-    //fetch(`${location.origin}/api/${this.$route.params.gid}/prices`)
-    //    .then(resp => resp.json())
-    //    .then(data => {
-    //      this.prices = data.prices
-    //    });
+    fetch(`${location.origin}/api/${this.$route.params.gid}/prices`)
+        .then(resp => resp.json())
+        .then(data => {
+          this.prices = data.prices
+          console.log(this.prices)
+        });
   }
 }
 </script>

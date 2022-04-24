@@ -9,8 +9,36 @@
             </v-col>
           </v-row>
           <v-row>
+            <v-col>
+              <v-expand-transition>
+                <div v-if="isAdvSearch">
+                  <v-row>
+                    <v-col>
+                      Advanced Search
+                      <v-divider></v-divider>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col cols="4">
+                      <v-autocomplete v-model="sGenres" :items="genres" label="Genres" chips small-chips multiple>
+                      </v-autocomplete>
+                    </v-col>
+                    <v-col cols="4">
+                      <v-autocomplete v-model="sDev" :items="devs" label="Developer" filled>
+                      </v-autocomplete>
+                    </v-col>
+                    <v-col cols="4">
+                      <v-autocomplete v-model="sPub" :items="pubs" label="Publisher" filled>
+                      </v-autocomplete>
+                    </v-col>
+                  </v-row>
+                </div>
+              </v-expand-transition>
+            </v-col>
+          </v-row>
+          <v-row>
             <v-col cols="3" offset="3">
-              <v-btn color="secondary" block="true">
+              <v-btn color="secondary" block="true" @click="isAdvSearch = !isAdvSearch">
                 Advanced Search
               </v-btn>
             </v-col>
@@ -36,10 +64,30 @@
 export default {
   data: () => ({
     search: '',
+    isAdvSearch: false,
+    genres: ["foo", "bar", "fizz", "buzz"],
+    pubs: ["foo", "bar", "fizz", "buzz"],
+    devs: ["foo", "bar", "fizz", "buzz"],
+    sGenres: [],
+    sDev: null,
+    sPub: null,
   }),
   methods: {
     submit(){
-      this.$router.push({path: "/search", query: {q: this.search}})
+      let q = {q: this.search}
+      if (this.isAdvSearch) {
+        q.isAdvSearch = true
+        if (this.sGenres.length !== 0) {
+          q.genres = this.sGenres.join()
+        }
+        if (this.sDev) {
+          q.dev = this.sDev
+        }
+        if (this.sPub) {
+          q.pub = this.sPub
+        }
+      }
+      this.$router.push({path: "/search", query: q})
     }
   },
   mounted() {
@@ -47,6 +95,19 @@ export default {
     if (qparams.q) {
       this.search = qparams.q
     }
+    if (qparams.isAdvSearch) {
+      this.isAdvSearch = true
+    }
+    if (qparams.genres) {
+      this.sGenres = qparams.genres.split(",")
+    }
+    if (qparams.dev) {
+      this.sDev = qparams.dev
+    }
+    if (qparams.pub) {
+      this.sPub = qparams.pub
+    }
+    // todo: add api call to populate genre options
   }
 }
 </script>
