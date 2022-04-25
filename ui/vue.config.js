@@ -4,7 +4,7 @@ module.exports = defineConfig({
     devServer: {
         proxy: {
             '^/api': {
-                target: 'https://api.sgse.one'
+                target: 'http://localhost:5000'
             }
         },
     },

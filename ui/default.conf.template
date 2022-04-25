@@ -1,6 +1,6 @@
 server {
     listen       ${PORT};
-    server_name  ${API_URL};
+    server_name  sgse;
 
     #access_log  /var/log/nginx/host.access.log  main;
 
@@ -19,6 +19,7 @@ server {
     }
 
     location /api/ {
+        proxy_ssl_server_name on;
         proxy_pass https://${API_URL};
     }
 }
