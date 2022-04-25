@@ -65,11 +65,11 @@ def search():
             if sort[0] == "achievements":
                 sortby = "achievements"
 
-            elif sort[0] == "release_date":
+            elif sort[0] == "date":
                 if reverse == True:
-                    sortby = sorting.FunctionFacet(engine.date_sorter_reverse)
-                else:
                     sortby = sorting.FunctionFacet(engine.date_sorter)
+                else:
+                    sortby = sorting.FunctionFacet(engine.date_sorter_reverse)
 
             elif sort[0] == "price":
                 sortby = "full_price"
