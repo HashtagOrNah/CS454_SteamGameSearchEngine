@@ -76,17 +76,20 @@
               </v-row>
               <v-divider></v-divider>
               <v-row>
-                <v-col cols="3">
-                  Release Date: {{ item.date }}
+                <v-col cols="4" align="center">
+                  <v-card-text>
+                    Release Date: {{ item.date }}
+                  </v-card-text>
                 </v-col>
-                <v-col cols="3">
-                  Review Count: {{ item.reviews }}
+                <v-col cols="4" align="center">
+                  <v-card-text>
+                    Achievement Count: {{ item.achievements }}
+                  </v-card-text>
                 </v-col>
-                <v-col cols="3">
-                  Achievement Count: {{ item.achievements }}
-                </v-col>
-                <v-col cols="3">
-                  Full Price: {{ getPriceStr(item.price) }}
+                <v-col cols="4" align="center">
+                  <v-card-text>
+                    Full Price: {{ getPriceStr(item.price) }}
+                  </v-card-text>
                 </v-col>
               </v-row>
             </v-card>
@@ -223,8 +226,6 @@ export default {
       {text: "Title (DESC)", value: "title-desc"},
       {text: "Release Date (ASC)", value: "date-asc"},
       {text: "Release Date (DESC)", value: "date-desc"},
-      {text: "Review Count (ASC)", value: "reviews-asc"},
-      {text: "Review Count (DESC)", value: "reviews-desc"},
       {text: "Achievement Count (ASC)", value: "achievements-asc"},
       {text: "Achievement Count (DESC)", value: "achievements-desc"},
     ],

@@ -53,6 +53,9 @@
                     Steam Listed Price: {{ getPriceStr(this.details.full_price) }}
                   </v-card-text>
                   <v-card-text>
+                    Release Date: {{ this.details.release_date }}
+                  </v-card-text>
+                  <v-card-text>
                     Genres: {{ this.details.genres }}
                   </v-card-text>
                   <v-card-text>
@@ -60,6 +63,9 @@
                   </v-card-text>
                   <v-card-text>
                     Publisher(s): {{ this.details.publishers }}
+                  </v-card-text>
+                  <v-card-text>
+                    Achievement Count: {{ this.details.achievements }}
                   </v-card-text>
                 </v-card>
               </v-col>
