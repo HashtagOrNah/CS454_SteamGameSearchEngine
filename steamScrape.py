@@ -78,43 +78,29 @@ class gameSearchEngine(object):
                             release_date=data[14])
 
         writer.commit()
-
-    def print_topN_results(self, results, years, total_results, ids): # Prints the results to n elements
-        print()
-        if len(results) == 0: 
-            print("No results found... :(\n")   # Results is empty
-            return
-        return_count = 0
-        for i in range(self.n):     # Try to print n elements from results
-            return_count += 1
-            print(results[i] + " - (" + years[i] + ")" + " id: " + ids[i])
-            if results.index(results[i]) == len(results)-1: # If there arent enough elements then break
-                break
-        print("\nFound %d results, returned %d\n"%(total_results, return_count)) # print total vs returned results
     
     def all_docs(self):
-        alld = self.index.searcher().documents()
+        alld = self.index.searcher().documents()        # Returns all ids in the index
 
-        #return_dict = {"data": [dict(x) for x in alld]}
         ids = []
         for x in alld:
             ids.append(x['app_id'])
 
         return ids
     
-    def get_max_id(self):
+    def get_max_id(self):                           # Gets the largest app_id in the index (useful for knowing where to start scraping)
 
         alld = self.index.searcher().documents()
         max = 0
         total = 0
         for x in alld:
-            if int(max) < int(x['app_id']):
+            if int(max) < int(x['app_id']):     # swap if the is larger than the last
                 max = x['app_id']
             total += 1
 
         return max
 
-    def get_unique_attr(self, attr_name):
+    def get_unique_attr(self, attr_name):       # Returns all unique values for the given attribute in keyword fields
 
         alld = self.index.searcher().documents()
         uniques = []
@@ -126,14 +112,14 @@ class gameSearchEngine(object):
 
         return uniques
 
-    def get_by_id(self, id):
+    def get_by_id(self, id): # Returns all data for a given steam id / assumes id is in index
 
         ret = None
         with self.index.searcher() as s:
-            qp = QueryParser("app_id", schema=self.index.schema)
+            qp = QueryParser("app_id", schema=self.index.schema) # Find the tuple
             q = qp.parse(id)
             results = s.search(q)
-            ret = {"data": [dict(hit) for hit in results]}
+            ret = {"data": [dict(hit) for hit in results]}      # Put tuple in a dict
         return ret
     
     def date_sorter_reverse(self, searcher, docnum):                    # Custom sorter for the release date format
@@ -152,12 +138,12 @@ class gameSearchEngine(object):
             elif str_date[0] == 'Sep' : str_date[0] = "10"
             elif str_date[0] == 'Nov' : str_date[0] = "11"
             elif str_date[0] == 'Dec' : str_date[0] = "12"
-            if len(str_date[1]) == 1: str_date[1] = "0" + str_date[1]
-            if len(str_date[0]) == 1: str_date[0] = "0" + str_date[0] 
+            if len(str_date[1]) == 1: str_date[1] = "0" + str_date[1] # Pad the day
+            if len(str_date[0]) == 1: str_date[0] = "0" + str_date[0] # Pad the month
             num = str_date[2]+str_date[0]+str_date[1]
             return int(num)
         except:
-            return 100000000
+            return 100000000                                # Weight TBA dates highest for reverse
 
     def date_sorter(self, searcher, docnum):                    # Custom sorter for the release date format
         date = searcher.stored_fields(docnum)['release_date']
@@ -180,7 +166,7 @@ class gameSearchEngine(object):
             num = str_date[2]+str_date[0]+str_date[1]
             return int(num)
         except:
-            return 1
+            return 1            # Weight the TBA dates low for dsc
 
     def query_parser(self):
         return MultifieldParser(self.search_fields, schema=self.index.schema, group=self.junction_type)
@@ -188,12 +174,13 @@ class gameSearchEngine(object):
 
 class steamScraper(object):
 
+    # Must be initialized with the steam web scraping key and last id if you have already scraped
     def __init__(self, steam_web_key, last_app_id = "0") -> None:
         self.last_id = last_app_id
         self.ids_link = "https://api.steampowered.com/IStoreService/GetAppList/v1/?&key=%s&max_results=1000&last_appid=" % steam_web_key
         self.app_request_link = "https://store.steampowered.com/api/appdetails?appids="
 
-    def get_id_data(self, id):
+    def get_id_data(self, id):          # Returns data for an individual steam_id
 
         try:
             pg = self.get_page(self.app_request_link + str(id))
@@ -290,16 +277,16 @@ class steamScraper(object):
         discount_price, discount_percent, genres, developers, publishers,
          image, reviews, app_id, platforms, release_date]
 
-    def get_ids(self):
+    def get_ids(self):                                  # Retrieves a list of ids starting at the last_id value
 
         pg = self.get_page(self.ids_link + self.last_id)
         if pg.status_code == 400:
-            print("Received 400 response")
+            print("Received 400 response")              # Steam bein a bitch
             quit()
-        pg = json.loads(pg.text)['response']['apps']
+        pg = json.loads(pg.text)['response']['apps']    # Load the ids
         app_list = []
         for app in pg:
-            app_list.append(app['appid'])
+            app_list.append(app['appid'])           # List all of the ids
         return app_list
     
     def get_page(self, url):

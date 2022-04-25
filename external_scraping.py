@@ -35,61 +35,61 @@ class PriceFetcher(object):
         
         return prices
 
-    def get_humble_price(self, title):
+    def get_humble_price(self, title): # Scrapes the humble bundle price
 
         url = "https://www.humblebundle.com/store/"
 
-        title = self.parse_title(title, "-")
+        title = self.parse_title(title, "-") # Get the title parsed for HB
 
         url = url + title
         page = requests.get(url)
-        data = BeautifulSoup(page.content, 'html.parser')
+        data = BeautifulSoup(page.content, 'html.parser') # Get page
 
         price_str = data.find_all('script')
-        price = json.loads(price_str[2].text)["offers"]['price']
+        price = json.loads(price_str[2].text)["offers"]['price'] # Find the price
         
         return price, url
     
-    def get_GOG_price(self, title):
+    def get_GOG_price(self, title): # returns GOG pricing 
 
         url = "https://www.gog.com/en/game/"
-        title = self.parse_title(title, "_")
+        title = self.parse_title(title, "_") # Parse title for GOG
         url = url + title
         page = requests.get(url)
-        data = BeautifulSoup(page.content, 'html.parser')
+        data = BeautifulSoup(page.content, 'html.parser') # get page
 
         price_str = data.find_all('script')
-        price = json.loads(price_str[0].text)["offers"]['price']
+        price = json.loads(price_str[0].text)["offers"]['price'] # get price
 
         return price, url
     
-    def get_fanatical_price(self, title):
+    def get_fanatical_price(self, title): # returns Fanatical pricing
 
         url = "https://www.fanatical.com/api/products-group/"
         game_page_url = "https://www.fanatical.com/en/game/"
 
-        title = self.parse_title(title, "-")
+        title = self.parse_title(title, "-") # parse title
 
         url = url + title
 
         page = requests.get(url)
-        data = json.loads(page.content)
-        price = data['currentPrice']['USD']
-        price = str(round(float(price)*0.01, 2))
+        data = json.loads(page.content) # get page 
+        price = data['currentPrice']['USD'] # get price
+        price = str(round(float(price)*0.01, 2)) # format price to standard
 
         return price, game_page_url+title
 
-    def parse_title(self, title, sep_char):
+    def parse_title(self, title, sep_char): # Parses the title to standard formating for website urls
 
         title = title.split('/')[0]
         title = title.lower()
         title = title.replace("'", "")
-        title = re.sub("[^0-9a-zA-Z]+", sep_char, title)
+        title = re.sub("[^0-9a-zA-Z]+", sep_char, title) # strip symbol characters 
         new_string = ""
         while title != new_string:
             #print(title)
             new_string = title
-            title = title.replace(2*sep_char, sep_char)
+            title = title.replace(2*sep_char, sep_char) # create separators
         if title[-1] == sep_char:
             title = title[0:-1]
         
