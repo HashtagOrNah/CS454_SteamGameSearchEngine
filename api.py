@@ -1,13 +1,12 @@
-from ast import Str
 from flask import Flask
 from flask import request
-from whoosh.searching import ResultsPage
-from external_scraping import PriceFetcher
-from steamScrape import gameSearchEngine
-from whoosh import sorting
 from whoosh import scoring
+from whoosh import sorting
 from whoosh.query import And
 from whoosh.query import Term
+
+from external_scraping import PriceFetcher
+from steamScrape import gameSearchEngine
 
 app = Flask(__name__)
 engine = gameSearchEngine()
@@ -63,19 +62,23 @@ def search():
             sort = params['sortby'].split("-")
             if sort[1] == "asc": reverse = False
 
-            if sort[0] == "achievements": sortby = "achievements"
+            if sort[0] == "achievements":
+                sortby = "achievements"
 
-            elif sort[0] == "release_date": 
+            elif sort[0] == "release_date":
                 if reverse == True:
                     sortby = sorting.FunctionFacet(engine.date_sorter_reverse)
                 else:
                     sortby = sorting.FunctionFacet(engine.date_sorter)
 
-            elif sort[0] == "price": sortby = "full_price"
+            elif sort[0] == "price":
+                sortby = "full_price"
 
-            elif sort[0] == "reviews": sortby = "total_reviews"
+            elif sort[0] == "reviews":
+                sortby = "total_reviews"
 
-            else: sortby = "title"
+            else:
+                sortby = "title"
 
             rp = s.search_page(query=query, pagenum=pagenum, **search_kwargs, reverse=reverse, sortedby=sortby)
 
@@ -99,6 +102,7 @@ def search():
 
     return resp
 
+
 @app.route('/api/<gid>/details')
 def get_details(gid):
     global engine
@@ -116,11 +120,13 @@ def price_search(gid):
 
     return {"prices": prices}
 
+
 @app.route('/api/genres')
 def get_unique_genres():
     global engine
     genre_list = engine.get_unique_attr("genres")
     return {"genres": genre_list}
+
 
 @app.route('/api/dev/<frag_str>')
 def get_unique_devs(frag_str):
@@ -134,6 +140,7 @@ def get_unique_devs(frag_str):
         dev_list.append(x.decode("UTF-8"))
         count += 1
     return {"devs": dev_list}
+
 
 @app.route('/api/pub/<frag_str>')
 def get_unique_pubs(frag_str):
