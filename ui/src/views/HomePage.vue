@@ -1,6 +1,6 @@
 <template>
   <v-form>
-    <v-container fluid style="min-height: calc(100vh - 80px)" >
+    <v-container fluid style="min-height: calc(100vh - 80px)">
       <v-row style="min-height: 80vh" align="center" justify="center">
         <v-col cols="8">
           <v-row>
