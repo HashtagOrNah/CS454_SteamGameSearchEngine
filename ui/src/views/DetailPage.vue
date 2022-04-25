@@ -49,18 +49,18 @@
                   <v-card-title>
                     Details
                   </v-card-title>
-                      <v-card-text>
-                        Steam Listed Price: {{ getPriceStr(this.details.full_price) }}
-                      </v-card-text>
-                      <v-card-text>
-                        Genres: {{ this.details.genres }}
-                      </v-card-text>
-                        <v-card-text>
-                          Developer(s): {{ this.details.developers }}
-                        </v-card-text>
-                        <v-card-text>
-                          Publisher(s): {{ this.details.publishers }}
-                        </v-card-text>
+                  <v-card-text>
+                    Steam Listed Price: {{ getPriceStr(this.details.full_price) }}
+                  </v-card-text>
+                  <v-card-text>
+                    Genres: {{ this.details.genres }}
+                  </v-card-text>
+                  <v-card-text>
+                    Developer(s): {{ this.details.developers }}
+                  </v-card-text>
+                  <v-card-text>
+                    Publisher(s): {{ this.details.publishers }}
+                  </v-card-text>
                 </v-card>
               </v-col>
             </v-row>
@@ -83,7 +83,8 @@
                   <v-row v-for="item in prices" :key="item.site">
                     <v-col>
                       <div style="margin-top: 1rem"></div>
-                      <v-card @click="gotoLink(item.link)" variant="outlined" style="margin-right: 1rem;margin-left: 1rem">
+                      <v-card @click="gotoLink(item.link)" variant="outlined"
+                              style="margin-right: 1rem;margin-left: 1rem">
                         <v-card-title>
                           {{ item.site }}
                         </v-card-title>
@@ -127,14 +128,15 @@ export default {
       this.$router.go(-1)
     },
     gotoSteam(gid) {
-      window.open('https://store.steampowered.com/app/' + gid, '_blank' )
+      window.open('https://store.steampowered.com/app/' + gid, '_blank')
     },
     gotoLink(link) {
-      window.open(link, '_blank' )
+      window.open(link, '_blank')
     },
     getPriceStr(price) {
+      if (price < 0) return "Free"
       let real_price = price / 100
-      real_price = real_price.toLocaleString("en-US", {style:"currency", currency:"USD"})
+      real_price = real_price.toLocaleString("en-US", {style: "currency", currency: "USD"})
       return real_price
     },
     scrapePrices() {
@@ -145,7 +147,9 @@ export default {
             this.prices = data.prices
             console.log(this.prices)
           })
-          .finally(() => {this.pricesLoading = false});
+          .finally(() => {
+            this.pricesLoading = false
+          });
     }
   },
   data: () => ({
@@ -159,10 +163,10 @@ export default {
   mounted() {
     this.gid = this.$route.params.gid
     fetch(`${location.origin}/api/${this.gid}/details`)
-      .then(resp => resp.json())
-      .then(data => {
-        this.details = data
-      });
+        .then(resp => resp.json())
+        .then(data => {
+          this.details = data
+        });
   }
 }
 </script>

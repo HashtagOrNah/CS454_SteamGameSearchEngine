@@ -1,13 +1,12 @@
-from ast import Str
 from flask import Flask
 from flask import request
-from whoosh.searching import ResultsPage
-from external_scraping import PriceFetcher
-from steamScrape import gameSearchEngine
-from whoosh import sorting
 from whoosh import scoring
+from whoosh import sorting
 from whoosh.query import And
 from whoosh.query import Term
+
+from external_scraping import PriceFetcher
+from steamScrape import gameSearchEngine
 
 app = Flask(__name__)
 engine = gameSearchEngine()
@@ -48,37 +47,41 @@ def search():
         advanced_terms = []
         if "genres" in params:
             for x in params['genres'].split(","):
-                advanced_terms.append(Term("genres", x.lower()))
+                advanced_terms.append(Term("genres", x.lower()))            # add genre tags
         if "pub" in params:
-            advanced_terms.append(Term("publishers", params["pub"].lower()))
+            advanced_terms.append(Term("publishers", params["pub"].lower()))    # Add the publisher tag
         if "dev" in params:
-            advanced_terms.append(Term("developers", params["dev"].lower()))
+            advanced_terms.append(Term("developers", params["dev"].lower()))    # add the dev tag
 
         search_kwargs = dict()
         if advanced_terms:
-            search_kwargs["filter"] = And(advanced_terms)
+            search_kwargs["filter"] = And(advanced_terms) # Put all tags into filter
 
-        if "sortby" in params:
+        if "sortby" in params:  # if we are sorting find parse the specifications
             reverse = True
             sort = params['sortby'].split("-")
             if sort[1] == "asc": reverse = False
 
-            if sort[0] == "achievements": sortby = "achievements"
+            if sort[0] == "achievements":
+                sortby = "achievements"
 
-            elif sort[0] == "release_date": 
+            elif sort[0] == "release_date":
                 if reverse == True:
                     sortby = sorting.FunctionFacet(engine.date_sorter_reverse)
                 else:
                     sortby = sorting.FunctionFacet(engine.date_sorter)
 
-            elif sort[0] == "price": sortby = "full_price"
+            elif sort[0] == "price":
+                sortby = "full_price"
 
-            elif sort[0] == "reviews": sortby = "total_reviews"
+            elif sort[0] == "reviews":
+                sortby = "total_reviews"
 
-            else: sortby = "title"
-
+            else:
+                sortby = "title"
+        # Sorting search results
             rp = s.search_page(query=query, pagenum=pagenum, **search_kwargs, reverse=reverse, sortedby=sortby)
-
+        # Search with no sorting
         else:
             rp = s.search_page(query=query, pagenum=pagenum, **search_kwargs)
 
@@ -99,14 +102,15 @@ def search():
 
     return resp
 
-@app.route('/api/<gid>/details')
+
+@app.route('/api/<gid>/details') # Get details for a single app_id
 def get_details(gid):
     global engine
     game_data = engine.get_by_id(gid)
     return game_data['data'][0]
 
 
-@app.route('/api/<gid>/prices')
+@app.route('/api/<gid>/prices')     # Get the prices for a game from extern sites
 def price_search(gid):
     global engine
     game_data = engine.get_by_id(str(gid))
@@ -116,13 +120,15 @@ def price_search(gid):
 
     return {"prices": prices}
 
-@app.route('/api/genres')
+
+@app.route('/api/genres')   # Get unique values in genres
 def get_unique_genres():
     global engine
     genre_list = engine.get_unique_attr("genres")
     return {"genres": genre_list}
 
-@app.route('/api/dev/<frag_str>')
+
+@app.route('/api/dev/<frag_str>') # Do a prefix search on developers and return top 10 results
 def get_unique_devs(frag_str):
     global engine
     results = engine.index.reader().expand_prefix("developers", frag_str.lower())
@@ -135,7 +141,8 @@ def get_unique_devs(frag_str):
         count += 1
     return {"devs": dev_list}
 
-@app.route('/api/pub/<frag_str>')
+
+@app.route('/api/pub/<frag_str>') # Do a prefix search on publishers and return top 10 results
 def get_unique_pubs(frag_str):
     global engine
     results = engine.index.reader().expand_prefix("publishers", frag_str.lower())
